@@ -30,8 +30,18 @@ def detect_empty(image, spot):
         return False 
     
 current_image = cv.imread('/Users/brandon/Desktop/carparking.jpg')
+empty_spots = 0
+
 for spot in coords:
     if detect_empty(current_image, spot):
         cv.rectangle(current_image, spot[0], spot[1], (0,255,0), 2)
+        empty_spots += 1
     else:
         cv.rectangle(current_image, spot[0], spot[1], (255,0,0), 2)
+
+font = cv.FONT_HERSHEY_SIMPLEX
+cv.putText(current_image, f"Empty spots: {empty_spots}", (50,50), font, 1.5, (255,255,255), 3, cv.LINE_AA)
+
+cv.imshow("Parking Lot", current_image)
+cv.waitkey(0)
+cv.destroyAllWindows() 
