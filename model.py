@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 from torchinfo import summary
 
@@ -25,3 +24,9 @@ class Model(nn.Module):
         x = self.classifier(x)
         return x
     
+train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
+              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied'
+              ]
+
+model = Model(train_data)
+summary(model, input_size=(1, 1, 48, 48))
