@@ -11,20 +11,18 @@ train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
               '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied'
               ]
 
-epochs = 30 
+epochs = 30
 model = Model(train_data)
 optimizer = torch.optim.Adam(params=model.parameters(), lr=0.0001)
 loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 
-X_train, y_train_long, y_train = organise_data()
-train_dataset = TensorDataset(X_train, y_train_long)
+X_train, X_test, y_train, y_test = organise_data()
+train_dataset = TensorDataset(X_train, y_train)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-#training loop 
 def train_step(X_train, y_train):
     start_time = time.time()
-    accuracy = 0
 
     for epoch in tqdm(range(epochs)):
         total_correct = 0
@@ -57,4 +55,3 @@ def train_step(X_train, y_train):
     time_taken = end_time - start_time
     print(f"{time_taken:.1f}")
 
-train_step(X_train, y_train)
