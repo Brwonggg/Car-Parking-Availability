@@ -2,7 +2,7 @@ from torch import nn
 from torchinfo import summary
 
 class Model(nn.Module):
-    def __init__(self, x):
+    def __init__(self):
         super().__init__()
         self.conv_block = nn.Sequential(
                             nn.Conv2d(in_channels=1 , out_channels=32 , kernel_size=3, stride=1, padding=1),
@@ -28,5 +28,5 @@ train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
               '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied'
               ]
 
-model = Model(train_data)
-summary(model, input_size=(1, 1, 48, 48))
+# model = Model(train_data)
+# summary(model, input_size=(1, 1, 48, 48))
