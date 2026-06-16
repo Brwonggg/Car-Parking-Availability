@@ -1,10 +1,8 @@
 import cv2 as cv
-from rectangle import draw_rectangle
-
-drawing = False
-ix, iy = -1, -1
+from draw_rect import draw_rectangle, set_image
 
 img = cv.imread('/Users/brandon/Desktop/carparking.jpg')
+set_image(img) 
 
 cv.namedWindow("Image")
 cv.setMouseCallback("Image", draw_rectangle)
