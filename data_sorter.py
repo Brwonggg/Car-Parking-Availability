@@ -12,13 +12,13 @@ def organise_data():
 
     X_train = X_train.reshape(X_train.shape[0], 1, 48, 48)
     X_test = X_test.reshape(X_test.shape[0], 1, 48, 48)
-    X_train = torch.FloatTensor(X_train)
-    X_test = torch.FloatTensor(X_test)
+    X_train = torch.FloatTensor(X_train) / 255
+    X_test = torch.FloatTensor(X_test) / 255
 
-    y_train_long = torch.from_numpy(y_train).long()
-    y_test_long = torch.from_numpy(y_test).long()
+    y_train = torch.from_numpy(y_train).long()
+    y_test = torch.from_numpy(y_test).long()
 
-    return X_train, y_train_long, y_train
+    return X_train, X_test, y_train, y_test
 
 
 

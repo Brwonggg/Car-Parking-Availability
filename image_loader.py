@@ -15,17 +15,17 @@ def load_images(train_data, augment=True):
                 labels.append(label)
 
                 if augment:
-                    # horizontal flip
+                    #Horizontal flip
                     images.append(cv.flip(img, 1))
                     labels.append(label)
 
-                    # slight rotation
+                    #Rotation
                     M = cv.getRotationMatrix2D((24, 24), 10, 1.0)
                     rotated = cv.warpAffine(img, M, (48, 48))
                     images.append(rotated)
                     labels.append(label)
 
-                    # brightness adjustment
+                    #Brightness
                     brighter = cv.convertScaleAbs(img, alpha=1.2, beta=10)
                     images.append(brighter)
                     labels.append(label)
