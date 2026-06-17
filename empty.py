@@ -3,12 +3,13 @@ import numpy as np
 from model import Model
 import ast
 import torch
+from torchvision import transforms
 
 train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
               '/Users/brandon/Downloads/parking/clf-data/not_empty'
               ]
 
-model = Model(train_data)
+model = Model()
 
 def read_coords():
     with open("coords.txt", "r") as file:
@@ -39,11 +40,13 @@ def detect_if_empty(image, coords):
         print("Empty ROI")
         return None
     #gray_roi = cv.cvtColor(roi, cv.COLOR_BGR2GRAY)
-    resized_roi = cv.resize(roi, (48,48))
+    resized_roi = cv.resize(roi, (224,224))
     resized_roi = resized_roi.astype('float32') / 255
     resized_roi = np.transpose(resized_roi, (2, 0, 1)) 
-    resized_roi = np.expand_dims(resized_roi, axis=0)
     roi_tensor  = torch.FloatTensor(resized_roi)
+    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    roi_tensor = normalize(roi_tensor)
+    roi_tensor = roi_tensor.unsqueeze(0)
 
     return roi_tensor
 
@@ -55,6 +58,7 @@ def predict_empty(roi_tensor):
 
 def count_empty(coords):   
     current_image = cv.imread('/Users/brandon/Desktop/carparking.jpg')
+    current_image = cv.rotate(current_image, cv.ROTATE_90_CLOCKWISE)
     empty_spots = 0
 
     for spot in coords:

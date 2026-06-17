@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 img = cv.imread('/Users/brandon/Desktop/carparking.jpg')
+img = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
 set_image(img) 
 
 train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
@@ -22,6 +23,8 @@ train_transform = transforms.Compose([
     transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
 ])
 
+open("coords.txt", "w").close()
+
 cv.namedWindow("Image")
 cv.setMouseCallback("Image", draw_rectangle)
 cv.imshow("Image",img)
@@ -31,7 +34,7 @@ while True:
         break
 cv.destroyAllWindows()
 
-model = Model(train_data)
+model = Model()
 
 X_train, X_test, y_train, y_test = organise_data()
 train_dataset = ParkingDataset(X_train, y_train, transform=train_transform)
@@ -39,7 +42,6 @@ test_dataset = ParkingDataset(X_test, y_test, transform=None)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 train_step(X_train, y_train)
 test_step(X_test,y_test)
@@ -47,4 +49,5 @@ test_step(X_test,y_test)
 coords = read_coords()
 
 count_empty(coords)
+
 

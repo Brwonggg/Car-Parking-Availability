@@ -70,7 +70,7 @@ When I attempted to use the YOLO model, it was also unable to detect the parking
  
 The CNN approach lacked sufficient data in general, having only around 6000 after data augmentation which proved to be insufficient because overfitting was still a prevalent problem. And overfitting would become the main bottleneck with every model I attempted, yolov8n.pt, yolov8s.pt(more parameters), CNN and even ResNet, as indicated by the training accuracy being near 100% within the first few epochs but the test accuracy always being 50% or lower.
 
-## How it can be improved 
+## How It Can Be Improved 
 The work around for this project being incapable of identifying empty/occupied parking spots on its own would be to use a YOLO model and feed the model whole parking lot images with labels, depicting with annotations what an empty and occupied lot looks like so that it can train itself on the parking lot as a whole. Right now, the dataset provided for training only shows what an individual empty or occupied parking lot looks like and so the model cross references this with the area inside of the rectangle to reach a conclusion.
 
 In addition to that, if you're using the YOLO model, you can improve it by training the model yourself using VisDrone which is a dataset used to train models using aerial drone photography or by finding ideal weights that other people have tested on the Hugging Face website.

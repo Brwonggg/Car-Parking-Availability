@@ -19,9 +19,9 @@ train_transform = transforms.Compose([
     transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
 ])
 
-epochs = 15
-model = Model(train_data)
-optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001, weight_decay=1e-3)
+epochs = 10
+model = Model()
+optimizer = torch.optim.Adam(params=model.parameters(), lr=0.01)
 loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 

@@ -10,7 +10,7 @@ def load_images(train_data, augment=True):
         for filename in os.listdir(folder):
             try:
                 img = cv.imread(os.path.join(folder,filename))
-                img = cv.resize(img, (48,48))
+                img = cv.resize(img, (224,224))
                 images.append(img)
                 labels.append(label)
 
