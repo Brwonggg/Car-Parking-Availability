@@ -7,13 +7,13 @@ from torchmetrics import MeanMetric
 from torch.utils.data import DataLoader, TensorDataset
 from data_sorter import organise_data
 
-train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
-              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied'
+train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
+              '/Users/brandon/Downloads/parking/clf-data/not_empty'
               ]
 
-epochs = 30
+epochs = 15
 model = Model(train_data)
-optimizer = torch.optim.Adam(params=model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
 loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 

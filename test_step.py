@@ -4,10 +4,9 @@ from model import Model
 from torchmetrics import MeanMetric
 from torch.utils.data import DataLoader, TensorDataset
 from data_sorter import organise_data
-from train_step import train_step
 
-train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
-              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied'
+train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
+              '/Users/brandon/Downloads/parking/clf-data/not_empty'
               ]
 
 epochs = 30 
@@ -40,6 +39,3 @@ def test_step(X_test, y_test):
     accuracy = total_correct / total_samples
 
     print(f"Test Loss: {avg_loss.item():.4f} | Test Accuracy: {accuracy * 100:.2f}%")
-
-train_step(X_train, y_train)
-test_step(X_test, y_test)
