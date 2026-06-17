@@ -2,12 +2,20 @@ import torch
 from torch import nn
 from model import Model
 from torchmetrics import MeanMetric
-from torch.utils.data import DataLoader, TensorDataset
-from data_sorter import organise_data
+from torch.utils.data import DataLoader
+from data_sorter import organise_data, ParkingDataset
+from torchvision import transforms
 
 train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
               '/Users/brandon/Downloads/parking/clf-data/not_empty'
               ]
+
+train_transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomRotation(degrees=15),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
+])
 
 epochs = 30 
 model = Model(train_data)
@@ -15,7 +23,7 @@ loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 
 X_train, X_test, y_train, y_test = organise_data()
-test_dataset = TensorDataset(X_test, y_test)
+test_dataset = ParkingDataset(X_test, y_test, transform=None)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 def test_step(X_test, y_test):
