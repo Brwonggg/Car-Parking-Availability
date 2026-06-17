@@ -77,6 +77,8 @@ mismatched training/test distributions, how you identified it, what the fix woul
 
 i noticed that it gets the wrong conclusion when it comes to the lighter coloured cars
 
+tried to use YOLO model but the data on aerial view of car parks is lacking 
+
 
 ## How it can be improved 
 
@@ -89,6 +91,8 @@ overfitting play around with dropout rates and learning rate and number of epoch
 tried adding weight decay to adam, reducing filters and 
 
 you can combat the model messing up the lighter coloured cars by addign more white coloured cars to your data to specifically combat it
+
+a way to improve the yolo model would be to train yoursel using visdrone or find ideal weights on huggingface
 
 
 (Unit tests)
