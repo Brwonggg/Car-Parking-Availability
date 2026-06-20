@@ -19,7 +19,9 @@ To run the project in your own local environment, follow these steps:
 2. The model will start training/learning the features and the time taken to do so will be displayed by the progress bar from the tqdm library along with the training loss and accuracy tracked every 3 epochs to show whether the training loop is training the model effectively. The overall trend should be an increase in accuracy and a decrease in loss.
 3. The model learns from the dataset provided the features of empty and occupied parking lots, it then inspects each area within the bounding rectangle and checks it against the features that it has learnt. When the progress bar reaches 100% completion, a GUI with the number of empty lots will be displayed, additionally bounding the empty lots in green rectangles and the occupied ones in red.
 
-## The process
+the bounding rectangle only is required on the first attempt on a new test image, subsequent uses arent requried 
+
+## Project Structure
 image_loader.py - image loading + preprocessing
 
 data_sorter.py - preprocessing + data augmentation
@@ -34,7 +36,7 @@ test_step.py - testing loop + test dataset
 
 train_step.py - training loop + train dataset
 
-## Why I Made Certain Choices 
+## Reasoning Behind Certain Architectural Choices
 In earlier iterations where I used greyscale, the model would differentiate an occupied parking lot from an empty one based on the contrast between the car and the lot itself, so a greater contrast meant that there was a car occupying the lot and a smaller one meant it was empty. I noticed that the model would almost always come to the wrong conclusion when it came to lighter-coloured cars because they have a more subtle contrast to the background as opposed to darker-coloured ones which is more prominent to the model. As such, the contrast caused by the lighter-coloured car matches that of an empty parking lot it learnt from the training data and it then thinks that that spot is empty when it's actually occupied by a lighter-coloured car. So in the end, I opted to not use greyscale to prevent this issue from occuring.
 
 ### Version 1(CNN) > Version 2(YOLO) > Version 3(ResNet) > Version 4(CNN)
@@ -45,6 +47,12 @@ Version 2: I used a YOLO model that was trained on hundreds of thousands of imag
 Version 3: I used a ResNet model and I eventually stuck with this because it was trained on the ImageNet dataset which has millions of annotated images, including aerial top-down views, so this model seemed the most suitable to learn the features required to correctly identify empty and occupied parking lots from an aerial view.
 
 Version 4: I went back to using a CNN but this time I was using a much larger dataset, went from 6000 images after data augmentation to 
+
+leveraging transfer learning again with vgg
+
+switching optimizer to sgd instead of adam 
+
+freezing initial layers rather than all backbone
 
 ## Lessons I Learnt
 
@@ -76,6 +84,14 @@ The change to the YOLO model was even worse and couldn't detect a car at all bec
 Resnet was trained on millions of data and that's why it's better to utilise transfer learning and leverage models that other people have trained, rather than train your own model from scratch. I wish that I had this knowledge of using pretrained models through transfer learning so I didn't have to go through the struggle of training a CNN from scratch.
 
 added in thersholf 
+
+ optimizing harder for in-distribution test accuracy doesn't necessarily produce a model that generalizes better to a genuinely different distribution 
+
+the empty probability doesnt have a large variance so the model cant actuallt tell confidently what is what , probabilities clustered around 0.5 regardless of true label"
+
+more dropout, fewer trainable layers, weight decay, fewer epochs — is the standard remedy for exactly this overfitting signature
+
+architecture, regularization, transfer learning, class balancing, normalization, threshold calibration
 
 ## Limitations
 This project isn't capable of identifying empty/occupied parking spots on its own. The user has to manually draw the rectangles to define the boundaries of a parking spot for the model to then inspect each area within the bounding rectangle and check it against the features that it has learnt from being trained on the data.

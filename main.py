@@ -1,66 +1,78 @@
 import cv2 as cv
 from draw_rect import draw_rectangle, set_image
-from empty import read_coords, count_empty
+from empty import read_coords, count_empty, coords_exist
 from model import Model
 from train_step import train_step
 from test_step import test_step
 from data_sorter import organise_data, ParkingDataset
 from torch.utils.data import DataLoader
 from torchvision import transforms
-import torch
-import time
+import torch, os
+from torch import nn
 
-start_time = time.time()
+TEST_IMG = '/Users/brandon/Desktop/aerial 2.avif'
 
-#'/Users/brandon/Desktop/empty-parking-lots-aerial-view-600nw-1841895190.webp'
-#'/Users/brandon/Desktop/carparking.jpg'
-#'/Users/brandon/Desktop/parkingarea.png'
-img = cv.imread('/Users/brandon/Desktop/parkingarea.png')
-#img = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
+sample_folder = '/Users/brandon/Downloads/archive/spots/empty'  
+sample_file = os.listdir(sample_folder)[0]
+sample_img = cv.imread(os.path.join(sample_folder, sample_file))
+
+img = cv.imread(TEST_IMG)
 set_image(img) 
 
-train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
-              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied']
+base_path = '/Users/brandon/Downloads/archive/spots'
+empty_folder = [os.path.join(base_path, 'empty')]
+occupied_folder = [os.path.join(base_path, 'parked')]
+
+train_data = empty_folder + occupied_folder
 
 train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
     transforms.RandomRotation(degrees=15),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2),
     transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
 ])
 
-open("coords.txt", "w").close()
+if not coords_exist():
+    print("No saved coordinates found. Please draw your parking spots.")
+    img = cv.imread(TEST_IMG)
+    set_image(img)
+    cv.namedWindow("Image")
+    cv.setMouseCallback("Image", draw_rectangle)
+    cv.imshow("Image", img)
+    while True:
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv.destroyAllWindows()
+else:
+    print("Using previously saved coordinates.")
 
-cv.namedWindow("Image")
-cv.setMouseCallback("Image", draw_rectangle)
-cv.imshow("Image",img)
-
-end_time = time.time()
-
-print(end_time - start_time)
-
-while True:
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
-cv.destroyAllWindows()
 
 model = Model()
 
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device("cpu")
 model = model.to(device)
 
 X_train, X_test, y_train, y_test = organise_data()
+
+class_counts = torch.tensor([
+    (y_train == 0).sum().float(),
+    (y_train == 1).sum().float()
+])
+class_weights = 1.0 / class_counts
+class_weights = class_weights / class_weights.sum() * 2
+loss_fn = nn.CrossEntropyLoss()
+
 train_dataset = ParkingDataset(X_train, y_train, transform=train_transform)
 test_dataset = ParkingDataset(X_test, y_test, transform=None)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-train_step(X_train, y_train)
-test_step(X_test,y_test)
+train_step(X_train, y_train, loss_fn)
+
+test_step(X_test,y_test, loss_fn)
 
 coords = read_coords()
 
-count_empty(coords)
+count_empty(coords, model, device)
 
 

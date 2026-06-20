@@ -1,10 +1,12 @@
 import cv2 as cv
 import os
 import numpy as np
-import glob
 
-train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
-              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied']
+base_path = '/Users/brandon/Downloads/archive/spots'
+empty_folder = [os.path.join(base_path, 'empty')]
+occupied_folder = [os.path.join(base_path, 'parked')]
+
+train_data = empty_folder + occupied_folder
 
 def load_images(train_data):
     images = []
@@ -13,7 +15,7 @@ def load_images(train_data):
         label = i
         for filename in os.listdir(folder):
             try:
-                img = cv.imread(os.path.join(folder, filename), cv.IMREAD_GRAYSCALE)
+                img = cv.imread(os.path.join(folder, filename))
                 img = cv.resize(img, (48, 48))
                 images.append(img)
                 labels.append(label)
