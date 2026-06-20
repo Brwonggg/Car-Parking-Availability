@@ -1,7 +1,7 @@
 ## Preview(video demonstration)
 
 ## Intro 
-This is a practice project that counts the number of empty parking spaces in an image, using a ResNet model.
+This is a practice project that counts the number of empty parking spaces in an image using object detection and trained by a convolutional neural network(CNN).
 
 ## Technologies
 - Python
@@ -11,76 +11,71 @@ To run the project in your own local environment, follow these steps:
 
 1. Clone the repository to your local machine
 2. Run `pip install -r requirements.txt`
-3. Load in the datasets and sample image into train_data and img respectively
+3. Load in the datasets and sample image into train_data and img respectively <<<<>>>>
 4. Run the code
 
 ## Features 
-1. After running the code, you will be prompted to draw the bounding rectangles for every individual parking lot, both occupied and empty, in the GUI with your mouse. This project isn't capable of identifying empty/occupied parking spots on its own, the user manually draws the rectangles to define the boundaries of where each parking spot is in the image for the model to check.
-2. Wait 8-10 minutes for the model to train which will be displayed by the progress bar from the tqdm library along with the training loss and accuracy tracked every 3 epochs to show whether the training loop is training the model effectively. The overall trend should be an increase in accuracy and a decrease in loss.
-3. The model learns from the datasets provided the features of empty and occupied parking lots, it then inspects each area within the bounding rectangle and checks it against the features that it has learnt. When the progress bar reaches 100% completion, a GUI with the number of empty lots will be displayed, additionally bounding the empty lots in green rectangles and the occupied ones in red.
+1. After running the code, you will be prompted to draw the bounding rectangles for every individual parking lot, both occupied and empty, in the GUI popup with your mouse. This project isn't capable of identifying empty/occupied parking spots on its own, the user manually draws the rectangles to define the boundaries of where each parking spot is in the image for the model to check.
+2. The model will start training/learning the features and the time taken to do so will be displayed by the progress bar from the tqdm library along with the training loss and accuracy tracked every 3 epochs to show whether the training loop is training the model effectively. The overall trend should be an increase in accuracy and a decrease in loss.
+3. The model learns from the dataset provided the features of empty and occupied parking lots, it then inspects each area within the bounding rectangle and checks it against the features that it has learnt. When the progress bar reaches 100% completion, a GUI with the number of empty lots will be displayed, additionally bounding the empty lots in green rectangles and the occupied ones in red.
 
-## The process (How I built it)
+## The process
+image_loader.py - image loading + preprocessing
 
-image_loader.py
+data_sorter.py - preprocessing + data augmentation
 
-data_sorter.py
+draw_rect.py - draw the rectangles in the GUI + passes the (x,y) coordinates into coords.txt
 
-draw_rect.py
+empty.py - checks whether area within the bounding rectangle drawn has a car
 
-empty.py
+model.py - CNN model architecture
 
-model.py
+test_step.py - testing loop + test dataset
 
-train_step.py - tracks the time taken for the model to train. shows a progress bar, 
+train_step.py - training loop + train dataset
 
-test_step.py
+## Why I Made Certain Choices 
+In earlier iterations where I used greyscale, the model would differentiate an occupied parking lot from an empty one based on the contrast between the car and the lot itself, so a greater contrast meant that there was a car occupying the lot and a smaller one meant it was empty. I noticed that the model would almost always come to the wrong conclusion when it came to lighter-coloured cars because they have a more subtle contrast to the background as opposed to darker-coloured ones which is more prominent to the model. As such, the contrast caused by the lighter-coloured car matches that of an empty parking lot it learnt from the training data and it then thinks that that spot is empty when it's actually occupied by a lighter-coloured car. So in the end, I opted to not use greyscale to prevent this issue from occuring.
 
-main.py
+### Version 1(CNN) > Version 2(YOLO) > Version 3(ResNet) > Version 4(CNN)
+Version 1 of the project: I used a convolutional neural network but it had enough capacity to memorize ~6000 images so there was not enough diverse data to learn generalizable visual concepts. It was memorising the data than actually learning the features to help it differentiate empty from occupied so when it was tested on data it had not seen before, it couldn't identify the two correctly. This is a case of overfitting.
 
-## Why I made certain choices/decisons 
+Version 2: I used a YOLO model that was trained on hundreds of thousands of images so there was more than enough data, but the type of data that it was trained on didn't match the aerial top-down view of the image I was using. The YOLO model cannot understand and learn features from datasets that vary so much from the testing image, so it performed even worse than using the CNN.
 
-even tried using different images for the bounding and there was a major difference
+Version 3: I used a ResNet model and I eventually stuck with this because it was trained on the ImageNet dataset which has millions of annotated images, including aerial top-down views, so this model seemed the most suitable to learn the features required to correctly identify empty and occupied parking lots from an aerial view.
 
-also changed the dataset simulatneously
-
-Using cross entropy loss instead of bce 
-
-In earlier iterations where I used greyscale so the model would identify whether a parking lot was empty or occupied based on the contrast, I noticed that it will mostly always come to the wrong conclusion when it came to the lighter-coloured cars because a white car would have a more subtle contrast to the background as opposed to a black one which is more prominent to the model and as such, the contrast caused by the white car matches that of an empty parking lot it learnt from the training data, it then thinks that that spot is empty when it's actually occupied by a white car.
-
-Version 1 of the project had me using a convolutional neural network , it had enough capacity to memorize 4872 images perfectly, but not enough diverse data to learn generalizable visual concepts.
-
-Version 2 was using a YOLO model it had enough capacity to memorize 4872 images perfectly, but not enough diverse data to learn generalizable visual concepts.
-
-Version 3 was using a ResNet model and I eventually stuck with using this
+Version 4: I went back to using a CNN but this time I was using a much larger dataset, went from 6000 images after data augmentation to 
 
 ## Lessons I Learnt
-The first of which is a more general lesson but it's to not take long breaks during projects because it then becomes very hard to get back into the flow of what you were doing or to pick up from where you left off of. Consistency is key but if you have to take an extended break, make sure to utilise comments and document your thought process at the time so that you have a sense of where to continue from.
 
 ### General Syntax Mistakes
-All other modules that contain specific functions should funnel into main.py and never import variables from main into other modules because it will cause an import error. The way around this is to instead create instances/variables in the module itself and then pass it into the function as a parameter/argument.
+All other modules that contain specific functions should funnel into main.py and never import variables from main into other modules because it will cause an import error. Instead create instances/variables in the module itself and then pass it into the function as a parameter/argument.
 
-Similarly, do not put training_step() inside of count_empty() because it will then cause the model to restart training from scratch every time a spot is counted so the training never actually happens and the model doesn't adjust the weights and biases on how to tell an empty parking lot from an occupied one. Training should happen before inference and this was most likely the cause for my model predicting everything to either be empty or occupied and not actually using the learnings from its training loop because it was never actually properly trained to identify the differences. 
+Similarly, do not put training_step() inside of count_empty() because it will cause the model to restart training from scratch every time a spot is counted, so the training never actually happens and the model doesn't adjust the weights and biases on how to tell an empty parking lot from an occupied one. Training should happen before inference and this was an early reason behind why my model was predicting everything to either be empty or occupied and not actually using the learnings from its training loop.
 
-Do not define variables inside functions, have them defined outside or every time that function is called, the variable is recreated and this is especially bad when you are doing accumulation of values such as loss.
+Do not define variables inside functions, have them defined outside or every time that function is called, the variable is recreated and this is especially important when doing accumulation of values such as loss.
 
-I also ran into the issue of the model overcounting the number of empty lots and having multiple rectangles outlining a single spot. This was caused by the coords.txt file not being restarted every time I ran the code, so every subsequent time I would run the code, it was using pre-existing coordinates and running it again that's why there were more than 14 recorded rectangles at a single time. The solution for this was by implementing close() every time before I drew the rectangle so that the text file would start from scratch without any pre-existing coordinates.
+The model overcounted the number of empty lots and had multiple rectangles outlining a single spot. This was caused by the coords.txt file not being restarted every time I ran the code, so every subsequent run, it was using pre-existing coordinates and running it again. This explains why there were more than 14 recorded rectangles at a single time. The solution for this was by implementing close() every time before I drew the rectangle so that the txt file would start from scratch without any pre-existing coordinates.
 
 ### Data
-Data is the most important thing when it comes to training a model, make sure you choose your data properly first before you start. The data your using to train your model should be near identical to the image that you are trying to test it so things like the angle of the parking lot whether it's from an aerial top-down view, from the perspective of a car or from a wall-mounted camera. These kind of things matter because the model trains itself on the data that it is given, it can't be given training data from a wall-mounted camera and be expected to reach conclusions for an aerial 
+Data is the most important thing when it comes to training a model, choose your data properly first before writing code. The data used to train your model should be near identical to the testing image used so things like the angle of the parking lot, whether it's from an aerial top-down view, from the perspective of a car or from a wall-mounted camera. The details matter because the model trains itself on the data that it is given, it can't be given training data from a wall-mounted camera and be expected to reach a conclusion for an aerial image.
 
+Ensure that you are using the best data available for your project's goals because the type of data that you use, influences the way that you write the code afterwards, the way you load your images, store variables, the different file paths. It's just very tedious to edit all the code after realising that your data isn't a good fit. 
 
-You have to ensure that the data type matches so first sort out data properly, if not everything else breaks. Things like converting tensors to longs and floats so that it can be passed into the model.
+I spent hours trying to debug the code and find out what was wrong, only to find out that it was because the cars in the dataset were horizontal while the ones in my parking image were vertical and the fix was to just rotate the parking image with rotate() but that goes to show how close the training data has to be with the testing image.
 
-Adding on to that, 
+If you're working with a model, constantly check what's the data type of the tensors that you are passing into it, ensure that the data type matches or is what is required or everything else breaks. Things like converting tensors to longs and floats so that it can be passed into the model. Similarly, keep track of their shapes and the device they're on as well.
 
-the data is even more important than you realise, i spent hours trying to debug the code and find out whats wrong only to find out that its because the cars in the data are horiziontal while the parking image i am using, they are vertical, the fix to this was just rotating my own testing 
-
-Another careless but mistake causing this discrepenacy between accuracy was becuase i was feeding my training step my test data isntead so this means that it was only able to learn from 20% of the data and shuffle=True so it was memorising as opposed to learning and overfitting as a result
+Another careless mistake that caused an even bigger discrepenacy between the training and test accuracy was me feeding train_step() the test data instead of the training one so this meant that it was only able to learn from 20% of the data as denoted by the train_test_split ratio of 0.2 and shuffle=False so it was memorising the data as opposed to learning the features and overfitting the data as a result.
 
 ### Version 1(CNN) > Version 2(YOLO) > Version 3(ResNet)
-In the CNN version of this project, I often had the issue of my training accuracy being significantly higher than my testing accuracy which indicates that my model is overfitting the data so I tried adding more data for the model to extract features from through data augmentation but there was no noticeable improvements. I also tried decreasing the number of epochs and the number of hidden layers such that the model would be forced to generalize more instead of just memorising but those changes also had no effect on the test accuracy.
+In the CNN version of this project, I was playing around with the dropout rate in model.py and found out that reducing the dropout from 0.5 to 0 actually helped the model better differentiate occupied and empty lots which is counterintuitive because dropout is meant to reduce overfitting. This is because of the small size of the data so the model was already struggling to find features and reducing the number of parameters just worsened this so it resorted to just memorising rather than actually learning the features.
 
-I was playing around with the dropout rate in model.py and found out that reducing the dropout from 0.5 to 0 actually helped the model better detect which lots were occupied and which were empty which is counterintuitive because dropout is meant to reduce overfitting. I found out that this is because given the small size of the data 
+The change to the YOLO model was even worse and couldn't detect a car at all because it lacked training data from an aerial view, the angles that the images in the dataset and that of the testing image were very different, this ties back into how important it is for the model to be trained on the specific kind of data that you are using in testing.
+
+Resnet was trained on millions of data and that's why it's better to utilise transfer learning and leverage models that other people have trained, rather than train your own model from scratch. I wish that I had this knowledge of using pretrained models through transfer learning so I didn't have to go through the struggle of training a CNN from scratch.
+
+added in thersholf 
 
 ## Limitations
 This project isn't capable of identifying empty/occupied parking spots on its own. The user has to manually draw the rectangles to define the boundaries of a parking spot for the model to then inspect each area within the bounding rectangle and check it against the features that it has learnt from being trained on the data.
@@ -96,7 +91,7 @@ In addition to that, if you're using the YOLO model, you can improve it by train
 
 To resolve the issue of the model mistaking occupied parking lots for empty ones for lighter-coloured cars, you can add specifically more white coloured cars to your data and ensure that it's labelled to be occupied such that the model can use these as references and train the parameters to better improve its detection when it comes to these types of cars. Add more white/light-coloured cars and not just any coloured car because you want to address this issue specifically and adding more data that doesn't include these light colours doesn't actually help your model get any better at resolving this issue of identifying occupied lots with light-coloured cars in them.
 
-For the CNN version, tune the hyperparameters and see what yields the best results. To reduce overfitting specifically, use a larger dataset, have more variety of data, use more data augementation to increase the overall number of testing examples that the model can learn from. Play around with the learning rate value, the number of epochs, add a weight decay to the optimizer or adjust the train_test_split ratio that you allocate. In CNNs, tweak the dropout values, reduce filters/hidden layers or try adding more pooling layers, which reduces the number of parameters and how much it can memorise, but be mindful of adjusting the number of in_features in nn.Linear() in the classifier layer afterwards. Then use TensorBoard to test your hyperparameter tuning, visualise your findings and find which conditions are the best.
+For the CNN version, tune the hyperparameters and see what yields the best results. To reduce overfitting specifically, use a larger dataset, have more variety of data, use more data augementation to increase the overall number of testing examples that the model can learn from. Play around with the learning rate value, the number of epochs, add a weight decay to the optimizer or adjust the train_test_split ratio that you allocate. Tweak the dropout values, reduce filters/hidden layers or try adding more pooling layers, which reduces the number of parameters and how much it can memorise, but be mindful of adjusting the number of in_features in nn.Linear() in the classifier layer afterwards. Then use TensorBoard to test your hyperparameter tuning, visualise your findings and find which conditions are the best.
 
 
 

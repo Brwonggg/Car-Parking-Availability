@@ -7,10 +7,10 @@ from torchmetrics import MeanMetric
 from torch.utils.data import DataLoader
 from data_sorter import organise_data, ParkingDataset
 from torchvision import transforms
+import glob, os
 
-train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
-              '/Users/brandon/Downloads/parking/clf-data/not_empty'
-              ]
+train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
+              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied']
 
 train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
@@ -19,15 +19,15 @@ train_transform = transforms.Compose([
     transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
 ])
 
-epochs = 10
+epochs = 20
 model = Model()
-optimizer = torch.optim.Adam(params=model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(params=model.parameters(), lr=0.001)
 loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 
 X_train, X_test, y_train, y_test = organise_data()
 train_dataset = ParkingDataset(X_train, y_train, transform=train_transform)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
 def train_step(X_train, y_train):
     start_time = time.time()

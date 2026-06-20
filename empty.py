@@ -5,9 +5,8 @@ import ast
 import torch
 from torchvision import transforms
 
-train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
-              '/Users/brandon/Downloads/parking/clf-data/not_empty'
-              ]
+train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
+              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied']
 
 model = Model()
 
@@ -39,31 +38,31 @@ def detect_if_empty(image, coords):
     if roi.size == 0:
         print("Empty ROI")
         return None
-    #gray_roi = cv.cvtColor(roi, cv.COLOR_BGR2GRAY)
-    resized_roi = cv.resize(roi, (224,224))
+    gray_roi = cv.cvtColor(roi, cv.COLOR_BGR2GRAY)
+    resized_roi = cv.resize(gray_roi, (48, 48))
     resized_roi = resized_roi.astype('float32') / 255
-    resized_roi = np.transpose(resized_roi, (2, 0, 1)) 
-    roi_tensor  = torch.FloatTensor(resized_roi)
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    roi_tensor = normalize(roi_tensor)
-    roi_tensor = roi_tensor.unsqueeze(0)
-
+    resized_roi = np.expand_dims(resized_roi, axis=0)   # add channel dim: (1,48,48)
+    resized_roi = np.expand_dims(resized_roi, axis=0)   # add batch dim: (1,1,48,48)
+    roi_tensor = torch.FloatTensor(resized_roi)
     return roi_tensor
 
-def predict_empty(roi_tensor):
+def predict_empty(roi_tensor, threshold=0.01):
     pred = predict_spot(roi_tensor)
-    predicted_class = pred.argmax(dim=1).item()
-
-    return predicted_class == 1
+    probabilities = torch.softmax(pred, dim=1)
+    empty_probability = probabilities[0][0].item()  # probability of class 0 (empty)
+    return empty_probability > threshold
 
 def count_empty(coords):   
-    current_image = cv.imread('/Users/brandon/Desktop/carparking.jpg')
-    current_image = cv.rotate(current_image, cv.ROTATE_90_CLOCKWISE)
+    #'/Users/brandon/Desktop/carparking.jpg'
+    #'/Users/brandon/Desktop/empty-parking-lots-aerial-view-600nw-1841895190.webp'
+    #'/Users/brandon/Desktop/parkingarea.png'
+    current_image = cv.imread('/Users/brandon/Desktop/parkingarea.png')
+    #current_image = cv.rotate(current_image, cv.ROTATE_90_CLOCKWISE)
     empty_spots = 0
 
     for spot in coords:
         roi_tensor = detect_if_empty(current_image, spot)
-        if roi_tensor is not None and predict_empty(roi_tensor):
+        if roi_tensor is not None and predict_empty(roi_tensor, threshold= 0.01):
             cv.rectangle(current_image, spot[0], spot[1], (0,255,0), 2)
             empty_spots += 1
         else:
@@ -76,4 +75,5 @@ def count_empty(coords):
     cv.waitKey(500)
     cv.waitKey(0)
     cv.destroyAllWindows() 
+
 

@@ -7,14 +7,20 @@ from test_step import test_step
 from data_sorter import organise_data, ParkingDataset
 from torch.utils.data import DataLoader
 from torchvision import transforms
+import torch
+import time
 
-img = cv.imread('/Users/brandon/Desktop/carparking.jpg')
-img = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
+start_time = time.time()
+
+#'/Users/brandon/Desktop/empty-parking-lots-aerial-view-600nw-1841895190.webp'
+#'/Users/brandon/Desktop/carparking.jpg'
+#'/Users/brandon/Desktop/parkingarea.png'
+img = cv.imread('/Users/brandon/Desktop/parkingarea.png')
+#img = cv.rotate(img, cv.ROTATE_90_CLOCKWISE)
 set_image(img) 
 
-train_data = ['/Users/brandon/Downloads/parking/clf-data/empty',
-              '/Users/brandon/Downloads/parking/clf-data/not_empty'
-              ]
+train_data = ['/Users/brandon/Downloads/matchbox_cars_parkinglot/empty',
+              '/Users/brandon/Downloads/matchbox_cars_parkinglot/occupied']
 
 train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(p=0.5),
@@ -29,12 +35,19 @@ cv.namedWindow("Image")
 cv.setMouseCallback("Image", draw_rectangle)
 cv.imshow("Image",img)
 
+end_time = time.time()
+
+print(end_time - start_time)
+
 while True:
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 cv.destroyAllWindows()
 
 model = Model()
+
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+model = model.to(device)
 
 X_train, X_test, y_train, y_test = organise_data()
 train_dataset = ParkingDataset(X_train, y_train, transform=train_transform)
