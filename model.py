@@ -1,5 +1,4 @@
 from torch import nn
-from torchinfo import summary
 import torchvision.models as models
 
 class Model(nn.Module):
@@ -22,5 +21,3 @@ class Model(nn.Module):
         x = self.backbone.classifier(x)
         return x
 
-# model = Model(train_data)
-# summary(model, input_size=(1, 1, 48, 48))
