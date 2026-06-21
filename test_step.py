@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 from model import Model
 from torchmetrics import MeanMetric
 from torch.utils.data import DataLoader

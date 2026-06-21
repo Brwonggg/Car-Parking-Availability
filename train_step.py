@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from data_sorter import organise_data, ParkingDataset
 from torchvision import transforms
 import os
+from torch import nn
 
 base_path = '/Users/brandon/Downloads/archive/spots'
 empty_folder = [os.path.join(base_path, 'empty')]
@@ -20,11 +21,12 @@ train_transform = transforms.Compose([
     transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
 ])
 
-epochs = 10
+epochs = 20
 model = Model()
 device = torch.device("cpu")
 model = model.to(device)
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.0001, momentum=0.9, weight_decay=1e-4)
+loss_fn = nn.CrossEntropyLoss()
 xent_metric = MeanMetric()  
 xent_metric = xent_metric.to(device)
 
@@ -98,4 +100,6 @@ def train_step(X_train, y_train, loss_fn):
     end_time = time.time()
     time_taken = end_time - start_time
     print(f"{time_taken:.1f}")
+
+train_step(X_train, y_train, loss_fn)
 
