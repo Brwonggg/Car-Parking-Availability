@@ -6,8 +6,7 @@ import torch
 from torchvision import transforms
 import os
 
-
-TEST_IMG = '/Users/brandon/Desktop/aerial 2.avif'
+TEST_IMG = '/Users/brandon/Downloads/archive/sample_frames/09.png'
 
 base_path = '/Users/brandon/Downloads/archive/spots'
 empty_folder = [os.path.join(base_path, 'empty')]
@@ -63,15 +62,19 @@ def predict_empty(roi_tensor, model, threshold=0.5):
 
 def count_empty(coords, model, device):   
     current_image = cv.imread(TEST_IMG)
+    overlay = current_image.copy()
     empty_spots = 0
 
     for spot in coords:
         roi_tensor = detect_if_empty(current_image, spot, device)
         if roi_tensor is not None and predict_empty(roi_tensor, model, threshold=0.5):
-            cv.rectangle(current_image, spot[0], spot[1], (0,255,0), 2)
+            cv.rectangle(overlay, spot[0], spot[1], (0, 255, 0), -1)  
             empty_spots += 1
         else:
-            cv.rectangle(current_image, spot[0], spot[1], (0,0,255), 2)
+            cv.rectangle(current_image, spot[0], spot[1], (0,0,255), -1)
+
+    alpha = 0.4 
+    current_image = cv.addWeighted(overlay, alpha, current_image, 1 - alpha, 0)
 
     font = cv.FONT_HERSHEY_SIMPLEX
     cv.putText(current_image, f"Empty spots: {empty_spots}", (50,50), font, 1.5, (255,255,255), 3, cv.LINE_AA)

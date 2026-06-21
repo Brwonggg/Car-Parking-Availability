@@ -21,6 +21,8 @@ To run the project in your own local environment, follow these steps:
 
 the bounding rectangle only is required on the first attempt on a new test image, subsequent uses arent requried 
 
+manually chunk each segment with a row_chunk and input number of slots per segment
+
 ## Project Structure
 image_loader.py - image loading + preprocessing
 
