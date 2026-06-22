@@ -1,23 +1,10 @@
 import cv2 as cv
 import numpy as np
-from model import Model
-import ast
-import torch
+import ast, torch, os
 from torchvision import transforms
-import os
 
-TEST_IMG = '/Users/brandon/Downloads/archive/sample_frames/09.png'
-
-base_path = '/Users/brandon/Downloads/archive/spots'
-empty_folder = [os.path.join(base_path, 'empty')]
-occupied_folder = [os.path.join(base_path, 'parked')]
-
-train_data = empty_folder + occupied_folder
-
-model = Model()
-
-def read_coords():
-    with open("coords.txt", "r") as file:
+def read_coords(coords_file):
+    with open(coords_file, "r") as file:
         content = file.read()
     cleaned = content.replace("Top left:","").replace("Bottom right:","")
 
@@ -28,11 +15,15 @@ def read_coords():
 
     return coords
 
+
+
 def predict_spot(roi_tensor, model):
     model.eval()
     with torch.inference_mode():
         pred = model(roi_tensor)
         return pred
+
+
 
 def detect_if_empty(image, coords, device):
     x1, y1 = coords[0]
@@ -54,14 +45,18 @@ def detect_if_empty(image, coords, device):
     roi_tensor = roi_tensor.to(device)
     return roi_tensor
 
+
+
 def predict_empty(roi_tensor, model, threshold=0.5):
     pred = predict_spot(roi_tensor, model)
     probabilities = torch.softmax(pred, dim=1)
     empty_probability = probabilities[0][0].item()  
     return empty_probability > threshold
 
-def count_empty(coords, model, device):   
-    current_image = cv.imread(TEST_IMG)
+
+
+def count_empty(coords, model, device, test_img_path):   
+    current_image = cv.imread(test_img_path)
     overlay = current_image.copy()
     empty_spots = 0
 
@@ -85,8 +80,10 @@ def count_empty(coords, model, device):
             break
     cv.destroyAllWindows()
 
-def coords_exist():
-    return os.path.exists("coords.txt") and os.path.getsize("coords.txt") > 0
+
+
+def coords_exist(coords_file):
+    return os.path.exists(coords_file) and os.path.getsize(coords_file) > 0
 
 
 

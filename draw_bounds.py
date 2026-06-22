@@ -1,10 +1,10 @@
 import cv2 as cv
 
-def draw_row_chunk(image_path, num_spots_per_subrow, num_sub_rows):
+def draw_row_chunk(image_path, num_spots_per_subrow, num_sub_rows, coords_file):
     """
-    Click 4 points bounding the FULL band (both sub-rows if there are 2).
+    Click 4 points bounding the FULL band
     The function then divides horizontally into num_spots_per_subrow columns
-    AND vertically into num_sub_rows, producing a full grid in one call.
+    And vertically into num_sub_rows, producing a full grid in one call
     """
     clicked = []
     img = cv.imread(image_path)
@@ -46,7 +46,7 @@ def draw_row_chunk(image_path, num_spots_per_subrow, num_sub_rows):
             x2 = int(full_left + (full_right - full_left) * col_frac_end)
             spots.append([(x1, y1), (x2, y2)])
 
-    with open("coords.txt", "a") as f:
+    with open(coords_file, "a") as f:
         for spot in spots:
             f.write(f"Top left:{spot[0]}\n")
             f.write(f"Bottom right:{spot[1]}\n")

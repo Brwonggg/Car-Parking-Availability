@@ -1,2 +1,12 @@
 *.pth
 best_model.pth
+__pycache__/
+*.pyc
+data/spots/empty/*
+data/spots/parked/*
+data/spots/obstacle/*
+data/test_images/*
+!data/spots/empty/.gitkeep
+!data/spots/parked/.gitkeep
+!data/spots/obstacle/.gitkeep
+!data/test_images/.gitkeep

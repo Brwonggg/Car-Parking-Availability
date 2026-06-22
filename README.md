@@ -1,4 +1,5 @@
 ## Preview
+<img width="955" height="543" alt="Screenshot 2026-06-21 at 2 54 04 PM" src="https://github.com/user-attachments/assets/701f427f-30c5-4427-ab3f-d1f18ae318b9" />
 
 ## Intro 
 This is a practice project that counts a rough estimate of empty parking spaces in an image using image processing and trained by a convolutional neural network(CNN).
@@ -55,8 +56,6 @@ Version 4 leveraged transfer learning of a VGG model. After experimenting with a
 ## Lessons Learnt
 ### General Syntax Mistakes
 All other modules that contain specific functions should funnel into main.py and never import variables from main into other modules because it will cause an import error. Instead create instances/variables in the module itself and then pass it into the function as a parameter/argument.
-
-Do not define variables inside functions, have them defined outside or every time that function is called, the variable is recreated and this is especially important when doing accumulation of values such as loss.
 
 ### Data
 Data is the most important thing when it comes to training a model, choose your data properly first before writing code. The data used to train your model should be near identical to the testing image used so things like the angle of the parking lot, whether it's from an aerial top-down view, from the perspective of a car or from a wall-mounted camera. The details matter because the model trains itself on the data that it is given, it can't be given training data from a wall-mounted camera and be expected to reach a conclusion for an aerial image.
