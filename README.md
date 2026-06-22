@@ -17,7 +17,7 @@ To run the project in your own local environment, follow these steps:
 3. Place images into:
 - `data/spots/empty/` (empty spot images)
 - `data/spots/parked/` (occupied spot images)
-4. Place your own test image at `data/test_images/test_parking.png`, or update `TEST_IMG` in `main.py` to point to your own image
+4. If you want, you can place your own test image at `data/test_images/test_parking.png`, or update `TEST_IMG` in `main.py` to point to your own image
 5. Run `pip install -r requirements.txt` 
 6. Run the code
 
