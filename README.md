@@ -15,8 +15,8 @@ To run the project in your own local environment, follow these steps:
 1. Clone the repository to your local machine
 2. Download the parking spot dataset [here](https://www.kaggle.com/datasets/fanchenbao/parking-spots)
 3. Place images into:
-   - `data/spots/empty/` (empty spot images)
-   - `data/spots/parked/` (occupied spot images)
+- `data/spots/empty/` (empty spot images)
+- `data/spots/parked/` (occupied spot images)
 4. Place your own test image at `data/test_images/test_parking.png`, or update `TEST_IMG` in `main.py` to point to your own image
 5. Run `pip install -r requirements.txt` 
 6. Run the code
