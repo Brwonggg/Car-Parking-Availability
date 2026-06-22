@@ -1,6 +1,7 @@
 *.pth
 best_model.pth
 __pycache__/
+.pytest_cache
 *.pyc
 data/spots/empty/*
 data/spots/parked/*

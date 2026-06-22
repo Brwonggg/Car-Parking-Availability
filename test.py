@@ -1,16 +1,7 @@
-
-import pytest
-import os
 import numpy as np
 import torch
-from unittest.mock import patch, MagicMock
 
-
-# ============================================================
-# read_coords() — parsing logic
-# ============================================================
-
-def test_read_coords_parses_basic_format(tmp_path, monkeypatch):
+def test_read_coords_parses_basic_format(tmp_path):
     coords_file = tmp_path / "coords.txt"
     coords_file.write_text(
         "Top left:(10, 20)\n"
@@ -18,58 +9,41 @@ def test_read_coords_parses_basic_format(tmp_path, monkeypatch):
         "Top left:(50, 60)\n"
         "Bottom right:(70, 80)\n"
     )
-    monkeypatch.chdir(tmp_path)
     from empty import read_coords
-    result = read_coords()
+    result = read_coords(str(coords_file)) 
     assert result == [[(10, 20), (30, 40)], [(50, 60), (70, 80)]]
 
 
-def test_read_coords_empty_file_returns_empty_list(tmp_path, monkeypatch):
+def test_read_coords_empty_file_returns_empty_list(tmp_path):
     coords_file = tmp_path / "coords.txt"
     coords_file.write_text("")
-    monkeypatch.chdir(tmp_path)
     from empty import read_coords
-    result = read_coords()
+    result = read_coords(str(coords_file)) 
     assert result == []
 
-
-# ============================================================
-# coords_exist()
-# ============================================================
-
-def test_coords_exist_false_when_missing(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_coords_exist_false_when_missing(tmp_path):
+    coords_file = tmp_path / "coords.txt"
     from empty import coords_exist
-    assert coords_exist() == False
+    assert coords_exist(str(coords_file)) == False
 
-
-def test_coords_exist_false_when_empty(tmp_path, monkeypatch):
+def test_coords_exist_false_when_empty(tmp_path):
     coords_file = tmp_path / "coords.txt"
     coords_file.write_text("")
-    monkeypatch.chdir(tmp_path)
     from empty import coords_exist
-    assert coords_exist() == False
+    assert coords_exist(str(coords_file)) == False
 
-
-def test_coords_exist_true_when_populated(tmp_path, monkeypatch):
+def test_coords_exist_true_when_populated(tmp_path):
     coords_file = tmp_path / "coords.txt"
     coords_file.write_text("Top left:(0,0)\nBottom right:(10,10)\n")
-    monkeypatch.chdir(tmp_path)
     from empty import coords_exist
-    assert coords_exist() == True
-
-
-# ============================================================
-# detect_if_empty(image, coords, device) — current 3-arg signature
-# ============================================================
+    assert coords_exist(str(coords_file)) == True
 
 def test_detect_if_empty_rejects_inverted_coordinates():
     from empty import detect_if_empty
     fake_image = np.zeros((100, 100, 3), dtype=np.uint8)
-    invalid_coords = [(50, 50), (10, 10)]  # x1 > x2, y1 > y2
+    invalid_coords = [(50, 50), (10, 10)]
     result = detect_if_empty(fake_image, invalid_coords, device=torch.device("cpu"))
     assert result is None
-
 
 def test_detect_if_empty_rejects_out_of_bounds():
     from empty import detect_if_empty
@@ -78,14 +52,12 @@ def test_detect_if_empty_rejects_out_of_bounds():
     result = detect_if_empty(fake_image, out_of_bounds, device=torch.device("cpu"))
     assert result is None
 
-
 def test_detect_if_empty_rejects_zero_size_roi():
     from empty import detect_if_empty
     fake_image = np.zeros((100, 100, 3), dtype=np.uint8)
-    zero_size = [(10, 10), (10, 50)]  # x1 == x2
+    zero_size = [(10, 10), (10, 50)]
     result = detect_if_empty(fake_image, zero_size, device=torch.device("cpu"))
     assert result is None
-
 
 def test_detect_if_empty_returns_correct_tensor_shape():
     from empty import detect_if_empty
@@ -93,17 +65,10 @@ def test_detect_if_empty_returns_correct_tensor_shape():
     valid_coords = [(10, 10), (60, 60)]
     result = detect_if_empty(fake_image, valid_coords, device=torch.device("cpu"))
     assert result is not None
-    assert result.shape == (1, 3, 48, 48)  # adjust if your target size differs
+    assert result.shape == (1, 3, 48, 48)
     assert result.dtype == torch.float32
 
-
-# ============================================================
-# Row-chunk interpolation math (the logic inside draw_row_chunk,
-# tested standalone without the cv2 GUI interaction)
-# ============================================================
-
 def interpolate_grid(full_left, full_right, full_top, full_bottom, num_spots_per_subrow, num_sub_rows):
-    """Standalone copy of the grid math from draw_row_chunk, for isolated testing."""
     spots = []
     for row_i in range(num_sub_rows):
         row_frac_start = row_i / num_sub_rows
@@ -118,41 +83,31 @@ def interpolate_grid(full_left, full_right, full_top, full_bottom, num_spots_per
             spots.append([(x1, y1), (x2, y2)])
     return spots
 
-
 def test_interpolate_grid_produces_correct_spot_count():
     spots = interpolate_grid(0, 500, 0, 100, num_spots_per_subrow=5, num_sub_rows=2)
     assert len(spots) == 10
-
 
 def test_interpolate_grid_single_subrow_matches_column_count():
     spots = interpolate_grid(0, 400, 0, 50, num_spots_per_subrow=8, num_sub_rows=1)
     assert len(spots) == 8
 
-
 def test_interpolate_grid_columns_share_exact_boundaries():
     spots = interpolate_grid(0, 400, 0, 50, num_spots_per_subrow=4, num_sub_rows=1)
     for i in range(len(spots) - 1):
-        assert spots[i][1][0] == spots[i + 1][0][0]  # right edge of one = left edge of next
-
+        assert spots[i][1][0] == spots[i + 1][0][0]
 
 def test_interpolate_grid_subrows_split_height_evenly():
     spots = interpolate_grid(0, 100, 0, 100, num_spots_per_subrow=1, num_sub_rows=2)
-    # spots[0] is sub-row 0, spots[1] is sub-row 1 (since num_spots_per_subrow=1)
     assert spots[0][0][1] == 0
     assert spots[0][1][1] == 50
     assert spots[1][0][1] == 50
     assert spots[1][1][1] == 100
 
-
-# ============================================================
-# Duplicate / overlap detection (used when cleaning coords.txt)
-# ============================================================
-
 def test_remove_duplicate_coords():
     coords = [
         [(0, 0), (10, 10)],
         [(20, 20), (30, 30)],
-        [(0, 0), (10, 10)],  # exact duplicate
+        [(0, 0), (10, 10)],
     ]
     seen = set()
     unique = []
@@ -162,7 +117,6 @@ def test_remove_duplicate_coords():
             seen.add(key)
             unique.append(spot)
     assert len(unique) == 2
-
 
 def test_boxes_overlap_detects_true_overlap():
     def boxes_overlap(box1, box2):
@@ -176,7 +130,6 @@ def test_boxes_overlap_detects_true_overlap():
     box_b = [(25, 25), (75, 75)]
     assert boxes_overlap(box_a, box_b) == True
 
-
 def test_boxes_overlap_detects_no_overlap():
     def boxes_overlap(box1, box2):
         x1_1, y1_1 = box1[0]
@@ -189,11 +142,6 @@ def test_boxes_overlap_detects_no_overlap():
     box_c = [(100, 100), (150, 150)]
     assert boxes_overlap(box_a, box_c) == False
 
-
-# ============================================================
-# Model architecture sanity check
-# ============================================================
-
 def test_model_output_shape():
     from model import Model
     model = Model()
@@ -201,8 +149,7 @@ def test_model_output_shape():
     dummy_input = torch.randn(1, 3, 48, 48)
     with torch.inference_mode():
         output = model(dummy_input)
-    assert output.shape == (1, 2)  # batch size 1, 2 classes
-
+    assert output.shape == (1, 2)
 
 def test_model_accepts_batch_input():
     from model import Model
