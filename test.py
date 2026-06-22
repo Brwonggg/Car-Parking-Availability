@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+
 def test_read_coords_parses_basic_format(tmp_path):
     coords_file = tmp_path / "coords.txt"
     coords_file.write_text(
@@ -12,7 +13,6 @@ def test_read_coords_parses_basic_format(tmp_path):
     from empty import read_coords
     result = read_coords(str(coords_file)) 
     assert result == [[(10, 20), (30, 40)], [(50, 60), (70, 80)]]
-
 
 def test_read_coords_empty_file_returns_empty_list(tmp_path):
     coords_file = tmp_path / "coords.txt"

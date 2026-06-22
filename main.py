@@ -6,6 +6,7 @@ import torch, os
 from draw_bounds import draw_row_chunk
 from model import Model
 
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 base_path = os.path.join(BASE_DIR, 'data', 'spots')
 empty_folder = [os.path.join(base_path, 'empty')]
@@ -15,11 +16,6 @@ train_data = empty_folder + occupied_folder
 TEST_IMG = os.path.join(BASE_DIR, 'data', 'test_images', 'test_parking.png')
 COORDS_FILE = os.path.join(BASE_DIR, 'coords.txt')
 MODEL_PATH = os.path.join(BASE_DIR, 'best_model.pth')
-
-# device = torch.device("cpu")
-
-# model, X_test, y_test, test_loader, loss_fn, xent_metric = train_step(train_data, device, MODEL_PATH)
-# model = test_step(model, test_loader, loss_fn, xent_metric, device, MODEL_PATH)
 
 if not os.path.exists(MODEL_PATH):
     print(f"No trained model found at {MODEL_PATH}. Training now...")

@@ -7,6 +7,7 @@ from tqdm import tqdm
 from model import Model
 from data_sorter import organise_data, ParkingDataset
 
+
 def train_step(train_data, device, model_path, epochs=20):
     model = Model().to(device)
     optimizer = torch.optim.SGD(params=model.parameters(), lr=0.0001, momentum=0.9, weight_decay=1e-4)

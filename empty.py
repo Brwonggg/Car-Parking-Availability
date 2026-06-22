@@ -3,6 +3,7 @@ import numpy as np
 import ast, torch, os
 from torchvision import transforms
 
+
 def read_coords(coords_file):
     with open(coords_file, "r") as file:
         content = file.read()

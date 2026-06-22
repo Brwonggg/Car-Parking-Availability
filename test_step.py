@@ -1,5 +1,6 @@
 import torch
 
+
 def test_step(model, test_loader, loss_fn, xent_metric, device, model_path):
     model.load_state_dict(torch.load(model_path))
     model.eval()

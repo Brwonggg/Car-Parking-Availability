@@ -1,5 +1,6 @@
 import cv2 as cv
 
+
 def draw_row_chunk(image_path, num_spots_per_subrow, num_sub_rows, coords_file):
     """
     Click 4 points bounding the FULL band
