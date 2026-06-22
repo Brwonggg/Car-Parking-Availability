@@ -3,19 +3,6 @@ import torch
 from image_loader import load_images
 from torchvision import transforms
 from torch.utils.data import Dataset
-import os
-
-base_path = '/Users/brandon/Downloads/archive/spots'
-empty_folder = [os.path.join(base_path, 'empty')]
-occupied_folder = [os.path.join(base_path, 'parked')]
-
-train_data = empty_folder + occupied_folder 
-
-train_transform = transforms.Compose([
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomRotation(degrees=15),
-    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)),
-])
 
 class ParkingDataset(Dataset):
     def __init__(self, images, labels, transform=None):
@@ -42,7 +29,7 @@ class ParkingDataset(Dataset):
         label = self.labels[idx]
         return img, label
 
-def organise_data():
+def organise_data(train_data):
     images, labels = load_images(train_data)  
     X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
     y_train = torch.from_numpy(y_train).long()
