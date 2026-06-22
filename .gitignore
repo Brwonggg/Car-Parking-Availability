@@ -6,8 +6,7 @@ __pycache__/
 data/spots/empty/*
 data/spots/parked/*
 data/spots/obstacle/*
-data/test_images/*
 !data/spots/empty/.gitkeep
 !data/spots/parked/.gitkeep
 !data/spots/obstacle/.gitkeep
-!data/test_images/.gitkeep
+
