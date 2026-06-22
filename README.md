@@ -3,9 +3,7 @@
 ## Intro 
 This is a practice project that counts a rough estimate of empty parking spaces in an image using image processing and trained by a convolutional neural network(CNN).
 
-Heavily inspired by ([this repo](https://github.com/FanchenBao/detect_empty_parking_spot))
-
-Get the dataset ([here](https://www.kaggle.com/datasets/fanchenbao/parking-spots))
+Heavily inspired by [this repo](https://github.com/FanchenBao/detect_empty_parking_spot)
 
 ## Technologies
 - Python
@@ -14,10 +12,13 @@ Get the dataset ([here](https://www.kaggle.com/datasets/fanchenbao/parking-spots
 To run the project in your own local environment, follow these steps:
 
 1. Clone the repository to your local machine
-2. Run `pip install -r requirements.txt`
-3. Ensure that you have updated variables base_path, empty_folder, occupied_folder, TEST_IMG inside of files train_step.py, test_step.py, main.py, image_loader, empty.py, data_sorter.py ,,,,,,,,,,,,,,,,,,
-4. Run `python3 train_step.py` to start training the model
-5. Once model has completed training, run `python3 main.py` and the image with empty and occupied parking lots will be displayed in a new window
+2. Download the parking spot dataset ([here]https://www.kaggle.com/datasets/fanchenbao/parking-spots)
+3. Place images into:
+   - `data/spots/empty/` (empty spot images)
+   - `data/spots/parked/` (occupied spot images)
+4. Place your own test image at `data/test_images/test_parking.png`, or update `TEST_IMG` in `main.py` to point to your own image
+5. Run `pip install -r requirements.txt` 
+6. Run the code
 
 ## Features 
 1. If coords.txt already exists, you can skip this section. If coords.txt does not exist, you will be prompted in the terminal to enter the number of columns in each row, followed by the number of rows in your bounding rectangle. The bounding rectangle is defined by the positioning of the dots you use to define the four corners(top left, top right, bottom left, bottom right in that specific sequence) of each parking lot segment(there should be no obstacles inside of your bounding rectangle). Do this for one segment and then escape this sequence by pressing 'q' on your keyboard when done with that segment, the coordinates of the individual parking lots will then be saved into a txt file. You will then be prompted to input either 'y' or 'n' to continue defining more segments or continue with the rest of the process respectively.
@@ -27,17 +28,17 @@ To run the project in your own local environment, follow these steps:
 ## Project Structure
 image_loader.py - image loading + preprocessing
 
-data_sorter.py - preprocessing + data augmentation
+data_sorter.py - preprocessing + data type formatting
 
 draw_bounds.py - draw bounding rectangles of parking lot sections and adds (x,y) coordinates into coords.txt
 
-empty.py - checks whether area within the bounding rectangle drawn has a car
+empty.py - functions used to check whether area within the bounding rectangle drawn has a car
 
-model.py - contains VGG Model class with frozen layers 
+model.py - VGG Model class with frozen backbone layers 
 
-test_step.py - testing loop + test dataset
+test_step.py - testing loop
 
-train_step.py - training loop + train dataset
+train_step.py - training loop
 
 ## Reasoning Behind Certain Choices
 In earlier iterations where I used greyscale, the model would differentiate an occupied parking lot from an empty one based on the contrast between the car and the lot itself, so a greater contrast meant that there was a car occupying the lot and a smaller one meant it was empty. I noticed that the model would almost always come to the wrong conclusion when it came to lighter-coloured cars because they have a more subtle contrast to the background as opposed to darker-coloured ones which is more prominent to the model. As such, the contrast caused by the lighter-coloured car matches that of an empty parking lot it learnt from the training data and it then thinks that that spot is empty when it's actually occupied by a lighter-coloured car. In the end, I opted not to use greyscale and solve this issue with lighter-coloured cars by adding more training examples of it into the dataset which I go into further detail in the Improvements section.
@@ -64,26 +65,26 @@ Ensure that you are using the best data available for your project's goals becau
 
 Your data should have a balanced ratio between classes, you should have the same number of images/training data for both empty and occupied so that your model is equally trained on both and doesn't favour one over the other. When I did confidence probability checks, I noticed that the values were sitting around 0.4-0.6 which means that the model wasn't confident in differentiating between empty and occupied lots.
 
-If you're working with a model, constantly check what's the data type of the tensors that you are passing into it, ensure that the data type matches or is what is required or everything else breaks. Things like converting tensors to longs and floats so that it can be passed into the model. Similarly, keep track of their shapes and the device they're on as well.
+Keep track of the data type of the tensors that you are passing into a model, ensure that the data types match or is what is required. Things like converting tensors to longs and floats so that it can be passed into the model. And also keep track of their shapes and the device they're on.
 
 ### Model
-added in thersholf 
+Threshold tuning did not result in any significant improvements because as mentioned earlier, the probabilities from the confidence probability checks had little standard deviation, they clustered around 0.5 regardless of true label. So the model wasn't very confident in differentiating which was which so moving the threshold value made little to no difference in accuracy.
 
-optimizing harder for in-distribution test accuracy doesn't necessarily produce a model that generalizes better to a genuinely different distribution 
-
-the empty probability doesnt have a large variance so the model cant actuallt tell confidently what is what , probabilities clustered around 0.5 regardless of true label"
-
-more dropout, fewer trainable layers, weight decay — is the standard remedy for exactly this overfitting signature
-
-architecture, regularization, transfer learning, class balancing, normalization, threshold calibration
+Overfitting was the most common problem among all the models so with time, I implemented more regularization techniques in the form of dropout, weight decay, frozen backbone layers and early stopping to reduce it. I tested dropout values in the model and eventually decided on the middle ground value of 0.5 because even though a higher value would theoretically reduce overfitting, the dataset is so small that reducing the dropout rate even more would disable even more neurons which are needed to identify the features and doing so would result in the model favouring one of the classes over the other. The frozen backbone layers keep the general features that VGG is trained on while the unfrozen ones allow it to develop the ability to spot features specific to this situation.
 
 ## Limitations
 This project isn't capable of identifying empty/occupied parking spots on its own. The user has to manually draw rectangles to define the boundaries of a parking spot for the model to then inspect each area within the bounding rectangle and check it against the features that it has learnt from being trained on the data.
 
-When I attempted to use the YOLO model, it was also unable to detect the parking lot availability from an aerial view because a large majority of the data in the YOLO model is trained on angles that come from cars or wall-mounted cameras and rarely the top-down view shown in the example image. The training data of car parks from an aerial view were lacking and as such, the model was unable to learn the features and identify a car from said angle.
+Optimizing harder for train/test accuracy doesn't necessarily produce a model that generalizes better to a completely new test image, the model can only perform well when the training data and test image are similar in nature.
 
 ## How It Can Be Improved 
 To resolve the issue of the model mistaking occupied parking lots for empty ones for lighter-coloured cars, you can add specifically more white coloured cars to your data and ensure that it's labelled to be occupied such that the model can use these as references and train the parameters to better improve its detection when it comes to these types of cars. Add more white/light-coloured cars and not just any coloured car because you want to address this issue specifically and adding more data that doesn't include these light colours doesn't actually help your model get any better at resolving this issue of identifying occupied lots with light-coloured cars in them.
+
+Add a larger variety of data, different lighting, angles, any slight amounts of variations so that the model can be more well-equipped and able to generalise features instead of relying on specific ones. 
+
+Extend the scope of the project by including obstacles so the grass patches between parking segments will be highlighted in blue. We are already using multi-class classification so adding one more class shouldn't prove to be very difficult.
+
+You can cut out the need to manually define the boundaries of the parking lots by using a YOLO model, specifically one that is trained using visdrone which is a dataset of drone/aerial top-down images/videos that come with labels and annotations.
 
 
 
